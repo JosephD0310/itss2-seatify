@@ -9,12 +9,8 @@ const roomSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    seatsCount: {
-        type: Number,
-        required: true
-    },
     status: {
-        type: String, // ví dụ: "active", "maintenance"
+        type: String,
         default: "active"
     }
 });
