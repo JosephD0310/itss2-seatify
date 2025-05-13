@@ -2,6 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db.js");
+const Room = require("./Models/Room.js");
+const Seat = require("./Models/Seat.js");
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;

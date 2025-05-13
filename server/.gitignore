@@ -1,10 +1,24 @@
-node_modules
-# Logs
-logs
+# Node modules
+node_modules/
+
+# Logs & Debug files
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
-# Local env files
+
+# Dependency lock files
 package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# VS Code & IDE config files
+.vscode/
+.idea/
+*.iml
+
+# OS-specific files
+.DS_Store
+Thumbs.db
