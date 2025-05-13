@@ -53,5 +53,49 @@ const bookSeat = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+const getSeatBookingInfo = async (req, res) => {
+    try {
+        const { seatId } = req.params;
 
-module.exports = { getSeatsByRoom, bookSeat };
+        const seat = await Seat.findById(seatId).populate("roomId", "name location");
+        if (!seat) {
+            return res.status(404).json({ message: "Seat not found" });
+        }
+
+        if (seat.status !== "booked" || !seat.startTime || !seat.usageDuration) {
+            return res.status(200).json({
+                seat,
+                remainingMinutes: null,
+                message: "Seat is not currently booked"
+            });
+        }
+
+        const now = new Date();
+        const endTime = new Date(seat.startTime.getTime() + seat.usageDuration * 60000);
+        const remainingMs = endTime - now;
+        const remainingMinutes = Math.max(Math.ceil(remainingMs / 60000), 0); 
+
+        return res.status(200).json({
+            seat,
+            remainingMinutes
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
+
+const getAllBookedSeat = async (req, res) => {
+    try {
+        const bookedSeats = await Seat.find({ status: "booked" })
+        if (!bookedSeats) {
+            return res.status(404).json({ message: "No booked seats found." });
+        }
+        return res.status(200).json(bookedSeats);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server Error" });
+    }
+}
+
+module.exports = { getSeatsByRoom, bookSeat, getSeatBookingInfo, getAllBookedSeat };
