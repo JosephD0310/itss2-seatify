@@ -15,6 +15,8 @@ const getSeatsByRoom = async (req, res) => {
     }
 };
 
+
+
 const bookSeat = async (req, res) => {
     try {
         const { seatId } = req.params;

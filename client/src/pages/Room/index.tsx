@@ -9,6 +9,8 @@ import Seat from '../../components/SeatBox';
 import { useEffect, useState } from 'react';
 import Status from '../../components/Status';
 import Cookies from 'js-cookie';
+import CountdownTimer from '../../components/CountdownTimer';
+
 
 function Room() {
     const sessionId = Cookies.get('sessionId');
@@ -22,11 +24,31 @@ function Room() {
 
     const [duration, setDuration] = useState<number>(0);
 
+    const [countdown, setCountdown] = useState<number | null>(null);
+    const [bookingSession, setBookingSession] = useState<string | null>(null);
+
+
     useEffect(() => {
         if (data) {
-            setSeats(data);
+            const now = new Date();
+
+            const enrichedSeats = data.map((s) => {
+                let timeRemaining = null;
+                if (s.status === 'booked' && s.startTime && s.usageDuration) {
+                    const start = new Date(s.startTime);
+                    const end = new Date(start.getTime() + s.usageDuration * 60000);
+                    const remaining = Math.floor((end.getTime() - now.getTime()) / 1000);
+                    timeRemaining = Math.max(remaining, 0);
+                }
+
+                return { ...s, timeRemaining };
+            });
+
+            setSeats(enrichedSeats);
         }
     }, [data]);
+
+
     const handleBooking = async () => {
         if (!selectedSeatData || duration < 10) {
             alert('Vui lòng nhập thời gian hợp lệ (>= 10 phút)');
@@ -35,7 +57,7 @@ function Room() {
         const now = new Date();
         const startTime = now.toISOString();
         const payload = {
-            session:sessionId ,
+            session: sessionId,
             startTime,
             usageDuration: duration,
         };
@@ -52,9 +74,14 @@ function Room() {
 
             if (res.ok) {
                 alert('Đặt chỗ thành công!');
-                const updated = seat.map((s) => (s._id === selectedSeatData._id ? { ...s, status: 'booked' } : s));
+                const updated = seat.map((s) =>
+                    s._id === selectedSeatData._id ? { ...s, status: 'booked' } : s
+                );
                 setSeats(updated);
                 setSelectedSeat(null);
+
+                setBookingSession(sessionId || null); // lưu session đặt
+                setCountdown(duration * 60); // đếm ngược theo giây
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
@@ -63,6 +90,22 @@ function Room() {
             alert('Đặt chỗ thất bại!');
         }
     };
+    useEffect(() => {
+        if (!countdown) return;
+
+        const interval = setInterval(() => {
+            setCountdown((prev) => {
+                if (!prev) return null;
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [countdown]);
 
     const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
 
@@ -70,6 +113,37 @@ function Room() {
         setSelectedSeat((prev) => (prev === seatNumber ? null : seatNumber));
     };
     const selectedSeatData = seat.find((s) => s.code === selectedSeat);
+
+    const handleReturn = async () => {
+        if (!selectedSeatData) return;
+
+        try {
+            const res = await fetch(`http://localhost:3000/seats/return/${selectedSeatData._id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ session: sessionId }),
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                alert('Trả chỗ thành công!');
+                const updated = seat.map((s) =>
+                    s._id === selectedSeatData._id ? { ...s, status: 'available' } : s
+                );
+                setSeats(updated);
+                setCountdown(null);
+                setBookingSession(null);
+            } else {
+                alert(`Lỗi: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Return error:', error);
+            alert('Trả chỗ thất bại!');
+        }
+    };
 
     return (
         <div>
@@ -88,14 +162,14 @@ function Room() {
                             {loading
                                 ? 'Loading please wait...'
                                 : seat.map((item) => (
-                                      <Seat
-                                          key={item.code}
-                                          seatNumber={item.code}
-                                          status={item.status}
-                                          isSelected={selectedSeat === item.code}
-                                          onClick={handleSeatClick}
-                                      />
-                                  ))}
+                                    <Seat
+                                        key={item.code}
+                                        seatNumber={item.code}
+                                        status={item.status}
+                                        isSelected={selectedSeat === item.code}
+                                        onClick={handleSeatClick}
+                                    />
+                                ))}
                         </div>
                     </div>
                     <div className="border-5 border-[#00D856] p-10 rounded-2xl flex flex-col items-center gap-5">
@@ -120,36 +194,50 @@ function Room() {
                         </div>
                         <p className="text-3xl">Thông tin chỗ ngồi</p>
                         <p className="font-bold text-4xl">{selectedSeat}</p>
-                        <div>
-                            {selectedSeatData?.status === 'available' && (
-                                <div className="flex flex-col items-center gap-4 mt-4">
-                                    <label className="text-3xl font-semibold">Đặt thời gian:</label>
-                                    <div className="flex flex-row items-center gap-2">
-                                        <input
-                                            type="number"
-                                            min="10"
-                                            step="10"
-                                            placeholder="Nhập số phút"
-                                            value={duration}
-                                            onChange={(e) => setDuration(parseInt(e.target.value))}
-                                            className="border border-gray-300 rounded px-4 py-2 w-40 text-3xl placeholder:text-base leading-normal"
-                                        />
-                                        <span className="text-3xl">phút</span>
-                                    </div>
-                                    <button
-                                        className="mt-25 bg-green-500 text-white text-3xl font-bold px-6 py-3 rounded hover:bg-green-600"
-                                        onClick={handleBooking}
-                                    >
-                                        Đặt chỗ
-                                    </button>
+
+                        {/* Nếu chỗ đang được chọn và đang rảnh => form đặt chỗ */}
+                        {selectedSeatData?.status === 'available' && (
+                            <div className="flex flex-col items-center gap-4 mt-4">
+                                <label className="text-3xl font-semibold">Đặt thời gian:</label>
+                                <div className="flex flex-row items-center gap-2">
+                                    <input
+                                        type="number"
+                                        min="10"
+                                        step="10"
+                                        placeholder="Nhập số phút"
+                                        value={duration}
+                                        onChange={(e) => setDuration(parseInt(e.target.value))}
+                                        className="border border-gray-300 rounded px-4 py-2 w-40 text-3xl placeholder:text-base leading-normal"
+                                    />
+                                    <span className="text-3xl">phút</span>
                                 </div>
-                            )}
-                        </div>
+                                <button
+                                    className="mt-25 bg-green-500 text-white text-3xl font-bold px-6 py-3 rounded hover:bg-green-600"
+                                    onClick={handleBooking}
+                                >
+                                    Đặt chỗ
+                                </button>
+                            </div>
+                        )}
+
+
+
+                        {/* Nếu chỗ đã được đặt => hiện thời gian đếm ngược và nút trả chỗ nếu đúng người */}
+                        {selectedSeatData?.status === 'booked' && countdown !== null && (
+                            <CountdownTimer
+                                initialSeconds={countdown}
+                                showReturnButton={bookingSession === sessionId}
+                                onReturn={handleReturn}
+                                onExpire={() => {
+                                    setCountdown(null);
+                                    setBookingSession(null);
+                                }}
+                            />
+                        )}
                     </div>
                 </div>
             </div>
         </div>
     );
 }
-
 export default Room;
