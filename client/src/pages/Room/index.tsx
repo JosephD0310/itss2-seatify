@@ -11,9 +11,8 @@ import Status from '../../components/Status';
 import Cookies from 'js-cookie';
 
 function Room() {
-    const session = Cookies.get('sessionId');
-    console.log('Session ID:', session);
-
+    const sessionId = Cookies.get('sessionId');
+    console.log(sessionId);
     const location = useLocation();
     const item = location.state as RoomData;
 
@@ -23,7 +22,6 @@ function Room() {
 
     const [duration, setDuration] = useState<number>(0);
 
-
     useEffect(() => {
         if (data) {
             setSeats(data);
@@ -31,13 +29,13 @@ function Room() {
     }, [data]);
     const handleBooking = async () => {
         if (!selectedSeatData || duration < 10) {
-            alert("Vui lòng nhập thời gian hợp lệ (>= 10 phút)");
+            alert('Vui lòng nhập thời gian hợp lệ (>= 10 phút)');
             return;
         }
         const now = new Date();
         const startTime = now.toISOString();
         const payload = {
-            session,
+            session:sessionId ,
             startTime,
             usageDuration: duration,
         };
@@ -55,9 +53,7 @@ function Room() {
 
             if (res.ok) {
                 alert('Đặt chỗ thành công!');
-                const updated = seat.map((s) =>
-                    s._id === selectedSeatData._id ? { ...s, status: 'booked' } : s
-                );
+                const updated = seat.map((s) => (s._id === selectedSeatData._id ? { ...s, status: 'booked' } : s));
                 setSeats(updated);
                 setSelectedSeat(null);
             } else {
@@ -93,14 +89,14 @@ function Room() {
                             {loading
                                 ? 'Loading please wait...'
                                 : seat.map((item) => (
-                                    <Seat
-                                        key={item.code}
-                                        seatNumber={item.code}
-                                        status={item.status}
-                                        isSelected={selectedSeat === item.code}
-                                        onClick={handleSeatClick}
-                                    />
-                                ))}
+                                      <Seat
+                                          key={item.code}
+                                          seatNumber={item.code}
+                                          status={item.status}
+                                          isSelected={selectedSeat === item.code}
+                                          onClick={handleSeatClick}
+                                      />
+                                  ))}
                         </div>
                     </div>
                     <div className="border-5 border-[#00D856] p-10 rounded-2xl flex flex-col items-center gap-5">
@@ -141,14 +137,14 @@ function Room() {
                                         />
                                         <span className="text-3xl">phút</span>
                                     </div>
-                                    <button className="mt-25 bg-green-500 text-white text-3xl font-bold px-6 py-3 rounded hover:bg-green-600"
+                                    <button
+                                        className="mt-25 bg-green-500 text-white text-3xl font-bold px-6 py-3 rounded hover:bg-green-600"
                                         onClick={handleBooking}
                                     >
                                         Đặt chỗ
                                     </button>
                                 </div>
                             )}
-
                         </div>
                     </div>
                 </div>
