@@ -53,6 +53,39 @@ const bookSeat = async (req, res) => {
         return res.status(500).json({ message: "Server error" });
     }
 };
+
+const cancelSeatBooking = async (req, res) => {
+    try {
+        const { seatId } = req.params;
+
+        // Tìm ghế
+        const seat = await Seat.findById(seatId);
+        if (!seat) {
+            return res.status(404).json({ message: "Seat not found" });
+        }
+
+        // Kiểm tra trạng thái ghế
+        if (seat.status !== "booked") {
+            return res.status(400).json({ message: `Seat is not booked (current status: ${seat.status})` });
+        }
+
+        // Cập nhật thông tin ghế
+        seat.status = "available";
+        seat.session = null;
+        seat.startTime = null;
+        seat.usageDuration = null;
+
+        await seat.save();
+
+        return res.status(200).json({
+            message: "Seat booking canceled successfully",
+            seat
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+}
 const getSeatBookingInfo = async (req, res) => {
     try {
         const { seatId } = req.params;
@@ -98,4 +131,4 @@ const getAllBookedSeat = async (req, res) => {
     }
 }
 
-module.exports = { getSeatsByRoom, bookSeat, getSeatBookingInfo, getAllBookedSeat };
+module.exports = { getSeatsByRoom, bookSeat, getSeatBookingInfo, getAllBookedSeat, cancelSeatBooking };
