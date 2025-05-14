@@ -8,8 +8,12 @@ import type { SeatData } from '../../types/seatdata';
 import Seat from '../../components/SeatBox';
 import { useEffect, useState } from 'react';
 import Status from '../../components/Status';
+import Cookies from 'js-cookie';
 
 function Room() {
+    const session = Cookies.get('sessionId');
+    console.log('Session ID:', session);
+
     const location = useLocation();
     const item = location.state as RoomData;
 
@@ -32,12 +36,6 @@ function Room() {
         }
         const now = new Date();
         const startTime = now.toISOString();
-
-        let session: 'morning' | 'afternoon' | 'evening';
-        const hour = now.getHours();
-        if (hour < 12) session = 'morning';
-        else if (hour < 18) session = 'afternoon';
-        else session = 'evening';
         const payload = {
             session,
             startTime,
@@ -98,7 +96,7 @@ function Room() {
                                     <Seat
                                         key={item.code}
                                         seatNumber={item.code}
-                                        status={item.status} 
+                                        status={item.status}
                                         isSelected={selectedSeat === item.code}
                                         onClick={handleSeatClick}
                                     />
