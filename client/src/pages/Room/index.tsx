@@ -98,6 +98,7 @@ function Room() {
                                     <Seat
                                         key={item.code}
                                         seatNumber={item.code}
+                                        status={item.status} 
                                         isSelected={selectedSeat === item.code}
                                         onClick={handleSeatClick}
                                     />
