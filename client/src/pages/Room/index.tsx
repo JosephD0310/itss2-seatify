@@ -39,7 +39,6 @@ function Room() {
             startTime,
             usageDuration: duration,
         };
-
         try {
             const res = await fetch(`http://localhost:3000/seats/book/${selectedSeatData._id}`, {
                 method: 'POST',
