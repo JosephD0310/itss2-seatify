@@ -24,7 +24,7 @@ function Room() {
 
     const [duration, setDuration] = useState<number>(0);
 
-    const [countdown, setCountdown] = useState<number | null>(null);
+    const [countdown, setCountdown] = useState<number>(0);
     const [bookingSession, setBookingSession] = useState<string | null>(null);
 
 
@@ -95,7 +95,7 @@ function Room() {
 
         const interval = setInterval(() => {
             setCountdown((prev) => {
-                if (!prev) return null;
+                if (!prev) return 0;
                 if (prev <= 1) {
                     clearInterval(interval);
                     return 0;
@@ -134,7 +134,7 @@ function Room() {
                     s._id === selectedSeatData._id ? { ...s, status: 'available' } : s
                 );
                 setSeats(updated);
-                setCountdown(null);
+                setCountdown(0);
                 setBookingSession(null);
             } else {
                 alert(`Lỗi: ${result.message}`);
@@ -220,16 +220,16 @@ function Room() {
                             </div>
                         )}
 
-
+                        
 
                         {/* Nếu chỗ đã được đặt => hiện thời gian đếm ngược và nút trả chỗ nếu đúng người */}
-                        {selectedSeatData?.status === 'booked' && countdown !== null && (
+                        {selectedSeatData?.status === 'booked' && (
                             <CountdownTimer
                                 initialSeconds={countdown}
                                 showReturnButton={bookingSession === sessionId}
                                 onReturn={handleReturn}
                                 onExpire={() => {
-                                    setCountdown(null);
+                                    setCountdown(0);
                                     setBookingSession(null);
                                 }}
                             />
