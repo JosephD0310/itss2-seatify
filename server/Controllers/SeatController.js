@@ -127,7 +127,7 @@ const getSeatBookingInfo = async (req, res) => {
     if (seat.status !== "booked" || !seat.startTime || !seat.usageDuration) {
       return res.status(200).json({
         seat,
-        remainingMinutes: null,
+        remainingSeconds: null,
         message: "Seat is not currently booked",
       });
     }
@@ -137,9 +137,9 @@ const getSeatBookingInfo = async (req, res) => {
       seat.startTime.getTime() + seat.usageDuration * 60000
     );
     const remainingMs = endTime - now;
-    const remainingMinutes = Math.max(Math.ceil(remainingMs / 60000), 0);
+    const remainingSeconds = Math.max(Math.ceil(remainingMs / 1000), 0);
 
-     if (remainingMinutes <= 0) {
+    if (remainingSeconds <= 0) {
       seat.status = "available";
       seat.startTime = null;
       seat.usageDuration = null;
@@ -147,14 +147,14 @@ const getSeatBookingInfo = async (req, res) => {
 
       return res.status(200).json({
         seat,
-        remainingMinutes: null,
+        remainingSeconds: null,
         message: "Booking has expired, seat is now available",
       });
     }
-    
+
     return res.status(200).json({
       seat,
-      remainingMinutes,
+      remainingSeconds,
     });
   } catch (err) {
     console.error(err);
