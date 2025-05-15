@@ -11,22 +11,21 @@ import Status from '../../components/Status';
 import Cookies from 'js-cookie';
 import CountdownTimer from '../../components/CountdownTimer';
 
-
 function Room() {
     const sessionId = Cookies.get('sessionId');
     console.log(sessionId);
     const location = useLocation();
     const item = location.state as RoomData;
 
-    const { data, loading } = useFetch<SeatData[]>('http://localhost:3000/seats/' + item._id);
+    const { data, reFetch } = useFetch<SeatData[]>('http://localhost:3000/seats/' + item._id);
 
     const [seat, setSeats] = useState<SeatData[]>([]);
 
     const [duration, setDuration] = useState<number>(0);
 
     const [countdown, setCountdown] = useState<number>(0);
-    const [bookingSession, setBookingSession] = useState<string | null>(null);
-
+    const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+    const [selectedSeatData, setSelectedSeatData] = useState<SeatData | null>(null);
 
     useEffect(() => {
         if (data) {
@@ -48,6 +47,12 @@ function Room() {
         }
     }, [data]);
 
+    useEffect(() => {
+        if (selectedSeat && data) {
+            const updated = data.find((s) => s.code === selectedSeat) || null;
+            setSelectedSeatData(updated);
+        }
+    }, [data, selectedSeat]);
 
     const handleBooking = async () => {
         if (!selectedSeatData || duration < 10) {
@@ -74,13 +79,7 @@ function Room() {
 
             if (res.ok) {
                 alert('Đặt chỗ thành công!');
-                const updated = seat.map((s) =>
-                    s._id === selectedSeatData._id ? { ...s, status: 'booked' } : s
-                );
-                setSeats(updated);
-                setSelectedSeat(null);
-
-                setBookingSession(sessionId || null); // lưu session đặt
+                await reFetch();
                 setCountdown(duration * 60); // đếm ngược theo giây
             } else {
                 alert(`Lỗi: ${result.message}`);
@@ -107,12 +106,31 @@ function Room() {
         return () => clearInterval(interval);
     }, [countdown]);
 
-    const [selectedSeat, setSelectedSeat] = useState<string | null>(null);
+    const handleSeatClick = async (seatId: string) => {
+        if (selectedSeat === seatId) {
+            setSelectedSeat(null);
+            setSelectedSeatData(null);
+        } else {
+            await reFetch();
+            const clickedSeat = seat.find((s) => s.code === seatId) || null;
+            setSelectedSeat(seatId);
+            setSelectedSeatData(clickedSeat);
+            console.log(clickedSeat);
+            try {
+                const res = await fetch(`http://localhost:3000/seats/book/${clickedSeat?._id}`);
+                if (!res.ok) {
+                    throw new Error('Failed to fetch seat details');
+                }
 
-    const handleSeatClick = (seatNumber: string) => {
-        setSelectedSeat((prev) => (prev === seatNumber ? null : seatNumber));
+                const json = await res.json();
+                const remain = json.remainingMinutes;
+                setCountdown(remain * 60);
+                console.log('Remaining time:', remain);
+            } catch (error) {
+                console.error('Error fetching seat detail:', error);
+            }
+        }
     };
-    const selectedSeatData = seat.find((s) => s.code === selectedSeat);
 
     const handleReturn = async () => {
         if (!selectedSeatData) return;
@@ -130,12 +148,8 @@ function Room() {
 
             if (res.ok) {
                 alert('Trả chỗ thành công!');
-                const updated = seat.map((s) =>
-                    s._id === selectedSeatData._id ? { ...s, status: 'available' } : s
-                );
-                setSeats(updated);
+                await reFetch();
                 setCountdown(0);
-                setBookingSession(null);
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
@@ -159,17 +173,15 @@ function Room() {
                     <div className="flex flex-col items-center">
                         <h2 className="font-bold">Vị trí chỗ ngồi</h2>
                         <div className="mt-10 grid grid-cols-4 gap-x-10 gap-y-5">
-                            {loading
-                                ? 'Loading please wait...'
-                                : seat.map((item) => (
-                                    <Seat
-                                        key={item.code}
-                                        seatNumber={item.code}
-                                        status={item.status}
-                                        isSelected={selectedSeat === item.code}
-                                        onClick={handleSeatClick}
-                                    />
-                                ))}
+                            {seat.map((item) => (
+                                <Seat
+                                    key={item.code}
+                                    seatNumber={item.code}
+                                    status={item.status}
+                                    isSelected={selectedSeat === item.code}
+                                    onClick={handleSeatClick}
+                                />
+                            ))}
                         </div>
                     </div>
                     <div className="border-5 border-[#00D856] p-10 rounded-2xl flex flex-col items-center gap-5">
@@ -193,7 +205,7 @@ function Room() {
                             </div>
                         </div>
                         <p className="text-3xl">Thông tin chỗ ngồi</p>
-                        <p className="font-bold text-4xl">{selectedSeat}</p>
+                        <p className="font-bold text-4xl">{selectedSeatData?.code}</p>
 
                         {/* Nếu chỗ đang được chọn và đang rảnh => form đặt chỗ */}
                         {selectedSeatData?.status === 'available' && (
@@ -220,17 +232,14 @@ function Room() {
                             </div>
                         )}
 
-                        
-
                         {/* Nếu chỗ đã được đặt => hiện thời gian đếm ngược và nút trả chỗ nếu đúng người */}
                         {selectedSeatData?.status === 'booked' && (
                             <CountdownTimer
                                 initialSeconds={countdown}
-                                showReturnButton={bookingSession === sessionId}
+                                showReturnButton={selectedSeatData?.session === sessionId}
                                 onReturn={handleReturn}
                                 onExpire={() => {
                                     setCountdown(0);
-                                    setBookingSession(null);
                                 }}
                             />
                         )}

@@ -1,4 +1,3 @@
-// src/components/CountdownTimer.tsx
 import { useEffect, useState } from 'react';
 
 type CountdownTimerProps = {
@@ -11,6 +10,12 @@ type CountdownTimerProps = {
 const CountdownTimer = ({ initialSeconds, onExpire, showReturnButton, onReturn }: CountdownTimerProps) => {
     const [remaining, setRemaining] = useState(initialSeconds);
 
+    // Cập nhật lại khi initialSeconds thay đổi
+    useEffect(() => {
+        setRemaining(initialSeconds);
+    }, [initialSeconds]);
+
+    // Tạo interval chỉ một lần
     useEffect(() => {
         const interval = setInterval(() => {
             setRemaining((prev) => {
@@ -24,7 +29,7 @@ const CountdownTimer = ({ initialSeconds, onExpire, showReturnButton, onReturn }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [initialSeconds]);
+    }, []); // <-- chỉ chạy 1 lần khi mount
 
     const minutes = Math.floor(remaining / 60);
     const seconds = remaining % 60;
