@@ -139,6 +139,19 @@ const getSeatBookingInfo = async (req, res) => {
     const remainingMs = endTime - now;
     const remainingMinutes = Math.max(Math.ceil(remainingMs / 60000), 0);
 
+     if (remainingMinutes <= 0) {
+      seat.status = "available";
+      seat.startTime = null;
+      seat.usageDuration = null;
+      await seat.save();
+
+      return res.status(200).json({
+        seat,
+        remainingMinutes: null,
+        message: "Booking has expired, seat is now available",
+      });
+    }
+    
     return res.status(200).json({
       seat,
       remainingMinutes,
