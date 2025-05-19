@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, useLocation } from 'react-router-dom';
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faPlugCircleBolt } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 import type { RoomData } from '../../types/roomdata';
 import useFetch from '../../services/hooks/useFetch';
@@ -80,7 +80,7 @@ function Room() {
             if (res.ok) {
                 alert('Đặt chỗ thành công!');
                 await reFetch();
-                setCountdown(duration * 60); // đếm ngược theo giây
+                setCountdown(duration); // đếm ngược theo giây
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
@@ -116,19 +116,8 @@ function Room() {
             setSelectedSeat(seatId);
             setSelectedSeatData(clickedSeat);
             console.log(clickedSeat);
-            try {
-                const res = await fetch(`http://localhost:3000/seats/book/${clickedSeat?._id}`);
-                if (!res.ok) {
-                    throw new Error('Failed to fetch seat details');
-                }
-
-                const json = await res.json();
-                const remain = json.remainingMinutes;
-                setCountdown(remain * 60);
-                console.log('Remaining time:', remain);
-            } catch (error) {
-                console.error('Error fetching seat detail:', error);
-            }
+            setCountdown(clickedSeat?.timeRemaining ?? 0);
+            console.log('Remaining time:', clickedSeat?.timeRemaining);
         }
     };
 
@@ -172,16 +161,32 @@ function Room() {
                 <div className="flex flex-row justify-around">
                     <div className="flex flex-col items-center">
                         <h2 className="font-bold">Vị trí chỗ ngồi</h2>
-                        <div className="mt-10 grid grid-cols-4 gap-x-10 gap-y-5">
-                            {seat.map((item) => (
-                                <Seat
-                                    key={item.code}
-                                    seatNumber={item.code}
-                                    status={item.status}
-                                    isSelected={selectedSeat === item.code}
-                                    onClick={handleSeatClick}
-                                />
-                            ))}
+                        <div className="mt-10 flex flex-row gap-10">
+                            <div className="flex flex-col gap-2 justify-around">
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                            </div>
+                            <div className="grid grid-cols-4 gap-x-10 gap-y-5">
+                                {seat.map((item) => (
+                                    <Seat
+                                        key={item.code}
+                                        seatNumber={item.code}
+                                        status={item.status}
+                                        isSelected={selectedSeat === item.code}
+                                        onClick={handleSeatClick}
+                                    />
+                                ))}
+                            </div>
+                            <div className="flex flex-col gap-2 justify-around">
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                                <FontAwesomeIcon icon={faPlugCircleBolt} />
+                            </div>
                         </div>
                     </div>
                     <div className="border-5 border-[#00D856] p-10 rounded-2xl flex flex-col items-center gap-5">
