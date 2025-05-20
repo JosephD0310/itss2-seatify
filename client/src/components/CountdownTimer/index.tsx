@@ -18,9 +18,6 @@ const CountdownTimer = ({ initialSeconds, onExpire, showReturnButton, onReturn }
                 if (prev <= 1) {
                     clearInterval(interval);
                     onExpire?.();
-                    if (showReturnButton) {
-                        onReturn?.();
-                    }
                     return 0;
                 }
                 return prev - 1;
