@@ -80,7 +80,7 @@ function Room() {
             if (res.ok) {
                 alert('Đặt chỗ thành công!');
                 await reFetch();
-                setCountdown(duration); // đếm ngược theo giây
+                setCountdown(duration * 60); // đếm ngược theo giây
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
