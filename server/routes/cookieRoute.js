@@ -17,7 +17,8 @@ router.post("/create", (req, res) => {
     res.cookie("sessionId", newSessionId, {
         maxAge: 30 * 60 * 1000, // 30 phút
         httpOnly: false,
-        sameSite: "strict"
+        sameSite: "none",
+        secure: true
     });
 
     res.status(200).json({
