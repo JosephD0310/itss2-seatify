@@ -8,11 +8,10 @@ import type { SeatData } from '../../types/seatdata';
 import Seat from '../../components/SeatBox';
 import { useEffect, useState } from 'react';
 import Status from '../../components/Status';
-import Cookies from 'js-cookie';
 import CountdownTimer from '../../components/CountdownTimer';
 
 function Room() {
-    const sessionId = Cookies.get('sessionId');
+    const sessionId = localStorage.getItem("sessionId");
     console.log(sessionId);
     const location = useLocation();
     const item = location.state as RoomData;
