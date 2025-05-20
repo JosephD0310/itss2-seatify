@@ -4,7 +4,7 @@ import useFetch from '../../services/hooks/useFetch';
 import type { RoomData } from '../../types/roomdata';
 
 function Home() {
-    const { data, loading } = useFetch<RoomData[]>('http://localhost:3000/rooms');
+    const { data, loading } = useFetch<RoomData[]>('https://itss2-seatify-tevf.onrender.com/rooms');
 
     const [room, setRooms] = useState<RoomData[]>([]);
 

@@ -17,7 +17,7 @@ function Room() {
     const location = useLocation();
     const item = location.state as RoomData;
 
-    const { data, reFetch } = useFetch<SeatData[]>('http://localhost:3000/seats/' + item._id);
+    const { data, reFetch } = useFetch<SeatData[]>('https://itss2-seatify-tevf.onrender.com/seats/' + item._id);
 
     const [seat, setSeats] = useState<SeatData[]>([]);
 
@@ -66,8 +66,9 @@ function Room() {
             startTime,
             usageDuration: duration,
         };
+        console.log('Booking payload:', payload);
         try {
-            const res = await fetch(`http://localhost:3000/seats/book/${selectedSeatData._id}`, {
+            const res = await fetch(`https://itss2-seatify-tevf.onrender.com/seats/book/${selectedSeatData._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,7 +126,7 @@ function Room() {
         if (!selectedSeatData) return;
 
         try {
-            const res = await fetch(`http://localhost:3000/seats/return/${selectedSeatData._id}`, {
+            const res = await fetch(`https://itss2-seatify-tevf.onrender.com/seats/return/${selectedSeatData._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
