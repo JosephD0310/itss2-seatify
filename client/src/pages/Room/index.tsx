@@ -63,7 +63,7 @@ function Room() {
         const payload = {
             session: sessionId,
             startTime,
-            usageDuration: duration,
+            usageDuration: duration * 60,
         };
         console.log('Booking payload:', payload);
         try {
