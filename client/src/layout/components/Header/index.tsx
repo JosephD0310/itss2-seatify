@@ -51,7 +51,7 @@ function Header() {
             {/* Hiển thị ghế đã đặt */}
             {bookedSeat && (
                 <div className="absolute right-10 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-lg shadow text-[#004671] font-semibold">
-                    Đã đặt ghế: <span className="text-green-600">{bookedSeat} <FontAwesomeIcon icon={faCircle} className="text-sm" color="#004671" /> {currentLocation}-{currentRoom}</span>
+                    Đã đặt ghế: <span className="text-green-600">{bookedSeat} <FontAwesomeIcon icon={faCircle} className="text-xs" color="#00D856" /> {currentLocation}-{currentRoom}</span>
                 </div>
             )}
         </div>
