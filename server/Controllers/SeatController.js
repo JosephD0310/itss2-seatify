@@ -138,7 +138,7 @@ const getSeatBookingInfo = async (req, res) => {
     );
     const remainingMs = endTime - now;
     const remainingSeconds = Math.max(Math.ceil(remainingMs / 1000), 0);
-
+    console.log("Remaining Seconds:", remainingSeconds);
     if (remainingSeconds <= 0) {
       seat.status = "available";
       seat.startTime = null;

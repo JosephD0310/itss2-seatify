@@ -5,7 +5,7 @@ const connectDB = require("./db.js");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 dotenv.config();
-
+const autoReleaseExpiredSeats = require("./cronJobs/autoReleaseSeat");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -18,7 +18,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 connectDB();
-
+autoReleaseExpiredSeats.start();
 app.use("/rooms", require("./routes/roomRoute"));
 app.use("/seats", require("./routes/seatRoute"));
 app.use("/cookies", require("./routes/cookieRoute"));
