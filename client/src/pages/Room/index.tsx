@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, useLocation } from 'react-router-dom';
-import { faChevronRight, faPlugCircleBolt } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faDoorOpen, faPlugCircleBolt } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 import type { RoomData } from '../../types/roomdata';
 import useFetch from '../../services/hooks/useFetch';
@@ -11,7 +11,7 @@ import Status from '../../components/Status';
 import CountdownTimer from '../../components/CountdownTimer';
 
 function Room() {
-    const sessionId = localStorage.getItem("sessionId");
+    const sessionId = localStorage.getItem('sessionId');
     console.log(sessionId);
     const location = useLocation();
     const item = location.state as RoomData;
@@ -56,6 +56,10 @@ function Room() {
     const handleBooking = async () => {
         if (!selectedSeatData || duration < 10) {
             alert('Vui lòng nhập thời gian hợp lệ (>= 10 phút)');
+            return;
+        }
+        if (!selectedSeatData || duration > 180) {
+            alert('Vui lòng nhập thời gian hợp lệ (<= 180 phút)');
             return;
         }
         const now = new Date();
@@ -170,16 +174,28 @@ function Room() {
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                             </div>
                             <div className="grid grid-cols-4 gap-x-10 gap-y-5">
-                                {seat.map((item) => (
-                                    <Seat
-                                        key={item.code}
-                                        seatNumber={item.code}
-                                        status={item.status}
-                                        isSelected={selectedSeat === item.code}
-                                        onClick={handleSeatClick}
-                                    />
-                                ))}
+                                {[...seat]
+                                    .sort((a, b) => {
+                                        const colA = a.code[0];
+                                        const colB = b.code[0];
+                                        const rowA = parseInt(a.code.slice(1));
+                                        const rowB = parseInt(b.code.slice(1));
+
+                                        if (colA !== colB) return colA.localeCompare(colB);
+                                        return rowA - rowB;
+                                    })
+
+                                    .map((item) => (
+                                        <Seat
+                                            key={item.code}
+                                            seatNumber={item.code}
+                                            status={item.status}
+                                            isSelected={selectedSeat === item.code}
+                                            onClick={handleSeatClick}
+                                        />
+                                    ))}
                             </div>
+
                             <div className="flex flex-col gap-2 justify-around">
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
@@ -188,6 +204,10 @@ function Room() {
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                             </div>
                         </div>
+                        <span>
+                            <FontAwesomeIcon icon={faDoorOpen} />
+                            <span className="ml-2">Cửa ra vào</span>
+                        </span>
                     </div>
                     <div className="border-5 border-[#00D856] p-10 rounded-2xl flex flex-col items-center gap-5">
                         <div className="w-[300px] px-7 py-5 border-b-3 border-[#00D856]">
