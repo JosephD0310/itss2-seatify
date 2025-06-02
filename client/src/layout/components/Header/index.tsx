@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import config from '../../../config';
 import { useEffect, useState } from 'react';
+import { faCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 function Header() {
     const [bookedSeat, setBookedSeat] = useState<string | null>(null);
@@ -48,8 +50,8 @@ function Header() {
 
             {/* Hiển thị ghế đã đặt */}
             {bookedSeat && (
-                <div className="absolute right-10 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-lg shadow text-black font-semibold">
-                    Đã đặt ghế: <span className="text-green-600">{bookedSeat} {currentLocation}-{currentRoom}</span>
+                <div className="absolute right-10 top-1/2 -translate-y-1/2 bg-white px-4 py-2 rounded-lg shadow text-[#004671] font-semibold">
+                    Đã đặt ghế: <span className="text-green-600">{bookedSeat} <FontAwesomeIcon icon={faCircle} className="text-sm" color="#004671" /> {currentLocation}-{currentRoom}</span>
                 </div>
             )}
         </div>
