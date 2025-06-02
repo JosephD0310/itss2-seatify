@@ -31,6 +31,8 @@ function Header() {
         const interval = setInterval(() => {
             const seat = sessionStorage.getItem("currentBookedSeat");
             const room = sessionStorage.getItem("currentRoom");
+            const location = sessionStorage.getItem("currentLocation");
+            setCurrentLocation(location);
             setBookedSeat(seat);
             setCurrentRoom(room);
         }, 1000); // cập nhật mỗi giây nếu có thay đổi
