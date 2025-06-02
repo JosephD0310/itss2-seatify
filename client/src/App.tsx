@@ -5,10 +5,16 @@ import { useEffect } from 'react';
 
 function App() {
     useEffect(() => {
-        fetch('http://localhost:3000/cookies/create', {
+        fetch('https://itss2-seatify-tevf.onrender.com/cookies/create', {
             method: 'POST',
-            credentials: 'include', 
-        });
+            credentials: 'include',
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.sessionId) {
+                    localStorage.setItem('sessionId', data.sessionId);
+                }
+            });
     }, []);
 
     return (

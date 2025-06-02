@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, useLocation } from 'react-router-dom';
-import { faChevronRight, faPlugCircleBolt } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faDoorOpen, faPlugCircleBolt, faSquare } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 import type { RoomData } from '../../types/roomdata';
 import useFetch from '../../services/hooks/useFetch';
@@ -8,16 +8,15 @@ import type { SeatData } from '../../types/seatdata';
 import Seat from '../../components/SeatBox';
 import { useEffect, useState } from 'react';
 import Status from '../../components/Status';
-import Cookies from 'js-cookie';
 import CountdownTimer from '../../components/CountdownTimer';
 
 function Room() {
-    const sessionId = Cookies.get('sessionId');
+    const sessionId = localStorage.getItem('sessionId');
     console.log(sessionId);
     const location = useLocation();
     const item = location.state as RoomData;
 
-    const { data, reFetch } = useFetch<SeatData[]>('http://localhost:3000/seats/' + item._id);
+    const { data, reFetch } = useFetch<SeatData[]>('https://itss2-seatify-tevf.onrender.com/seats/' + item._id);
 
     const [seat, setSeats] = useState<SeatData[]>([]);
 
@@ -59,6 +58,10 @@ function Room() {
             alert('Vui lòng nhập thời gian hợp lệ (>= 10 phút)');
             return;
         }
+        if (!selectedSeatData || duration > 180) {
+            alert('Vui lòng nhập thời gian hợp lệ (<= 180 phút)');
+            return;
+        }
         const now = new Date();
         const startTime = now.toISOString();
         const payload = {
@@ -66,8 +69,9 @@ function Room() {
             startTime,
             usageDuration: duration,
         };
+        console.log('Booking payload:', payload);
         try {
-            const res = await fetch(`http://localhost:3000/seats/book/${selectedSeatData._id}`, {
+            const res = await fetch(`https://itss2-seatify-tevf.onrender.com/seats/book/${selectedSeatData._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,7 +84,7 @@ function Room() {
             if (res.ok) {
                 alert('Đặt chỗ thành công!');
                 await reFetch();
-                setCountdown(duration); // đếm ngược theo giây
+                setCountdown(duration * 60); // đếm ngược theo giây
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
@@ -125,7 +129,7 @@ function Room() {
         if (!selectedSeatData) return;
 
         try {
-            const res = await fetch(`http://localhost:3000/seats/return/${selectedSeatData._id}`, {
+            const res = await fetch(`https://itss2-seatify-tevf.onrender.com/seats/return/${selectedSeatData._id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,7 +164,23 @@ function Room() {
             <div className="mx-10 mt-10 bg-white rounded-2xl shadow-xs p-10">
                 <div className="flex flex-row justify-around">
                     <div className="flex flex-col items-center">
-                        <h2 className="font-bold">Vị trí chỗ ngồi</h2>
+                        <div className='flex flex-row items-center justify-between'>
+                            <h2 className="font-bold">Vị trí chỗ ngồi</h2>
+                            <div>
+                                <span className="">
+                                    <FontAwesomeIcon icon={faSquare} color='#00D856'/>
+                                    <span className="ml-2">Đang chọn</span>
+                                </span>
+                                <span className="">
+                                    <FontAwesomeIcon icon={faSquare} color='#FB2C36'/>
+                                    <span className="ml-2">Đã đặt</span>
+                                </span>
+                                <span className="">
+                                    <FontAwesomeIcon icon={faSquare} color='#D1D5DC'/>
+                                    <span className="ml-2">Trống</span>
+                                </span>
+                            </div>
+                        </div>
                         <div className="mt-10 flex flex-row gap-10">
                             <div className="flex flex-col gap-2 justify-around">
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
@@ -170,16 +190,29 @@ function Room() {
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                             </div>
                             <div className="grid grid-cols-4 gap-x-10 gap-y-5">
-                                {seat.map((item) => (
-                                    <Seat
-                                        key={item.code}
-                                        seatNumber={item.code}
-                                        status={item.status}
-                                        isSelected={selectedSeat === item.code}
-                                        onClick={handleSeatClick}
-                                    />
-                                ))}
+                                {[...seat]
+                                    .sort((a, b) => {
+                                        const colA = a.code[0]; // chữ cái
+                                        const colB = b.code[0];
+                                        const rowA = parseInt(a.code.slice(1)); // số
+                                        const rowB = parseInt(b.code.slice(1));
+
+                                        // Ưu tiên theo hàng (số) tăng dần
+                                        if (rowA !== rowB) return rowA - rowB;
+                                        // Nếu cùng hàng, sắp theo cột (chữ) tăng dần
+                                        return colA.localeCompare(colB);
+                                    })
+                                    .map((item) => (
+                                        <Seat
+                                            key={item.code}
+                                            seatNumber={item.code}
+                                            status={item.status}
+                                            isSelected={selectedSeat === item.code}
+                                            onClick={handleSeatClick}
+                                        />
+                                    ))}
                             </div>
+
                             <div className="flex flex-col gap-2 justify-around">
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
@@ -188,6 +221,10 @@ function Room() {
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                             </div>
                         </div>
+                        <span className="mt-5">
+                            <FontAwesomeIcon icon={faDoorOpen} />
+                            <span className="ml-2">Cửa ra vào</span>
+                        </span>
                     </div>
                     <div className="border-5 border-[#00D856] p-10 rounded-2xl flex flex-col items-center gap-5">
                         <div className="w-[300px] px-7 py-5 border-b-3 border-[#00D856]">
