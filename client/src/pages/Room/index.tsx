@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, useLocation } from 'react-router-dom';
-import { faChevronRight, faDoorOpen, faPlugCircleBolt } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faDoorOpen, faPlugCircleBolt, faSquare } from '@fortawesome/free-solid-svg-icons';
 import config from '../../config';
 import type { RoomData } from '../../types/roomdata';
 import useFetch from '../../services/hooks/useFetch';
@@ -164,7 +164,23 @@ function Room() {
             <div className="mx-10 mt-10 bg-white rounded-2xl shadow-xs p-10">
                 <div className="flex flex-row justify-around">
                     <div className="flex flex-col items-center">
-                        <h2 className="font-bold">Vị trí chỗ ngồi</h2>
+                        <div className='flex flex-row items-center justify-between'>
+                            <h2 className="font-bold">Vị trí chỗ ngồi</h2>
+                            <div>
+                                <span className="">
+                                    <FontAwesomeIcon icon={faSquare} color='#00D856'/>
+                                    <span className="ml-2">Đang chọn</span>
+                                </span>
+                                <span className="">
+                                    <FontAwesomeIcon icon={faSquare} color='#FB2C36'/>
+                                    <span className="ml-2">Đã đặt</span>
+                                </span>
+                                <span className="">
+                                    <FontAwesomeIcon icon={faSquare} color='#D1D5DC'/>
+                                    <span className="ml-2">Trống</span>
+                                </span>
+                            </div>
+                        </div>
                         <div className="mt-10 flex flex-row gap-10">
                             <div className="flex flex-col gap-2 justify-around">
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
