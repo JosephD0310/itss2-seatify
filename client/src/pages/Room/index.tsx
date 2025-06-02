@@ -176,15 +176,16 @@ function Room() {
                             <div className="grid grid-cols-4 gap-x-10 gap-y-5">
                                 {[...seat]
                                     .sort((a, b) => {
-                                        const colA = a.code[0];
+                                        const colA = a.code[0]; // chữ cái
                                         const colB = b.code[0];
-                                        const rowA = parseInt(a.code.slice(1));
+                                        const rowA = parseInt(a.code.slice(1)); // số
                                         const rowB = parseInt(b.code.slice(1));
 
-                                        if (colA !== colB) return colA.localeCompare(colB);
-                                        return rowA - rowB;
+                                        // Ưu tiên theo hàng (số) tăng dần
+                                        if (rowA !== rowB) return rowA - rowB;
+                                        // Nếu cùng hàng, sắp theo cột (chữ) tăng dần
+                                        return colA.localeCompare(colB);
                                     })
-
                                     .map((item) => (
                                         <Seat
                                             key={item.code}
@@ -204,7 +205,7 @@ function Room() {
                                 <FontAwesomeIcon icon={faPlugCircleBolt} />
                             </div>
                         </div>
-                        <span>
+                        <span className="mt-5">
                             <FontAwesomeIcon icon={faDoorOpen} />
                             <span className="ml-2">Cửa ra vào</span>
                         </span>
