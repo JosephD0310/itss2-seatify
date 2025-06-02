@@ -85,6 +85,9 @@ function Room() {
                 alert('Đặt chỗ thành công!');
                 await reFetch();
                 setCountdown(duration * 60); // đếm ngược theo giây
+                sessionStorage.setItem('currentBookedSeat', selectedSeatData.code);
+                sessionStorage.setItem('currentRoom', selectedSeatData.roomId.name);
+                sessionStorage.setItem('currentLocation', selectedSeatData.roomId.location);
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
@@ -143,6 +146,9 @@ function Room() {
                 alert('Trả chỗ thành công!');
                 await reFetch();
                 setCountdown(0);
+                sessionStorage.removeItem('currentBookedSeat');
+                sessionStorage.removeItem('currentRoom');
+                sessionStorage.removeItem('currentLocation');
             } else {
                 alert(`Lỗi: ${result.message}`);
             }
@@ -280,6 +286,9 @@ function Room() {
                                 onReturn={handleReturn}
                                 onExpire={() => {
                                     setCountdown(0);
+                                    sessionStorage.removeItem('currentBookedSeat');
+                                    sessionStorage.removeItem('currentRoom');
+                                    sessionStorage.removeItem('currentLocation');
                                 }}
                             />
                         )}
