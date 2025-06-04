@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type CountdownTimerProps = {
     initialSeconds: number;
@@ -9,22 +9,37 @@ type CountdownTimerProps = {
 
 const CountdownTimer = ({ initialSeconds, onExpire, showReturnButton, onReturn }: CountdownTimerProps) => {
     const [remaining, setRemaining] = useState(initialSeconds);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const tick = () => {
+        setRemaining((prev) => {
+            if (prev <= 1) {
+                onExpire?.();
+                return 0;
+            } else {
+                timeoutRef.current = setTimeout(tick, 1000);
+                return prev - 1;
+            }
+        });
+    };
 
     useEffect(() => {
+        // Reset remaining time
         setRemaining(initialSeconds);
 
-        const interval = setInterval(() => {
-            setRemaining((prev) => {
-                if (prev <= 1) {
-                    clearInterval(interval);
-                    onExpire?.();
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+        // Clear previous timeout if exists
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
 
-        return () => clearInterval(interval);
+        // Start countdown
+        timeoutRef.current = setTimeout(tick, 1000);
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
     }, [initialSeconds]);
 
     const minutes = Math.floor(remaining / 60);
